@@ -1,12 +1,16 @@
 #include <hal.h>
 #include <CMSDK_CM4.h>
 
+#include <stdlib.h>
+
 #define BAUD 38400
 
 /* Default clock on the MPS2 boards seems to be 25MHz */
 #ifndef SYSTEM_CLOCK
 #define SYSTEM_CLOCK 25000000UL
 #endif
+
+static void __attribute__ ((destructor)) semihosting_exit(void);
 
 /* The startup file calls a SystemInit function. */
 void SystemInit(void)
@@ -27,6 +31,8 @@ void SystemInit(void)
   NVIC_EnableIRQ(SysTick_IRQn);
   SysTick->VAL = 0UL;
   SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
+  /* register the destructor */
+  atexit(&semihosting_exit);
 }
 
 static volatile unsigned long long overflowcnt = 0;
